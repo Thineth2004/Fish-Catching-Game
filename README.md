@@ -5,7 +5,7 @@ A 2D fishing arcade game developed with **Unity and C#**. Catch fish, avoid dang
 ## 🎮 Gameplay Preview
 
 <!-- Add your gameplay video link here -->
-[▶ Watch Gameplay Video](YOUR_VIDEO_LINK_HERE)
+[▶ Watch Gameplay Video](https://youtu.be/QXnL13Ztyck)
 
 <!-- Replace these placeholders with your actual screenshots -->
 ![Gameplay Screenshot](Screenshots/gameplay.png)
@@ -87,7 +87,7 @@ Through this project, I gained practical experience with:
 
 ## 🎥 Gameplay Video
 
-[Watch the full gameplay demonstration](YOUR_VIDEO_LINK_HERE)
+[Watch the full gameplay demonstration](https://youtu.be/QXnL13Ztyck)
 
 ## 👨‍💻 Developer
 
