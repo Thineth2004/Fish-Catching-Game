@@ -1,28 +1,43 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Button))]
 public class DifficultyButton : MonoBehaviour
 {
-    public float difficulty;
+    [Header("Difficulty Settings")]
+    [Tooltip("Time between fish spawns in seconds.")]
+    [Min(0.1f)]
+    public float difficulty = 2f;
+
     private Button button;
     private GameManager gameManager;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
         button = GetComponent<Button>();
-        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
-        button.onClick.AddListener(SetDifficulty);
+        gameManager = FindFirstObjectByType<GameManager>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnEnable()
     {
-        
+        if (button != null)
+            button.onClick.AddListener(SetDifficulty);
+    }
+
+    private void OnDisable()
+    {
+        if (button != null)
+            button.onClick.RemoveListener(SetDifficulty);
     }
 
     private void SetDifficulty()
     {
-        gameManager.SetDifficultyScreen(difficulty);
+        if (gameManager == null)
+        {
+            Debug.LogError("GameManager not found!");
+            return;
+        }
+
+        gameManager.StartGame(difficulty);
     }
 }

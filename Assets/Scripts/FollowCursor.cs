@@ -1,66 +1,111 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 
 public class FollowCursor : MonoBehaviour
 {
-    [Header("Screen Mapping Limits (Arduino)")]
-    public float minX = 0f;
-    public float maxX = 1023f;
-    public float minY = 0f;
-    public float maxY = 1023f;
-
-    [Header("Fixed Z Distance from Camera")]
-    public float fixedZ = 9.5f;
-
-    [Header("Smooth Movement")]
-    private float smoothSpeed = 5.0f;
+    [Header("Movement Settings")]
+    [SerializeField] private float fixedZ = 9.5f;
+    [SerializeField] private float smoothSpeed = 5f;
 
     [Header("Audio Settings")]
-    public AudioSource reelingAudio;
+    [SerializeField] private AudioSource reelingAudio;
 
     [Header("Game Reference")]
-    public GameManager gameManager;
+    [SerializeField] private GameManager gameManager;
 
-    private Vector3 targetPos;
-    private Vector3 lastPos;
+    private Camera mainCamera;
+    private Vector3 targetPosition;
+    private Vector3 lastPosition;
 
-    void Start()
+    private void Awake()
     {
-        Cursor.visible = false;
-        targetPos = transform.position;
-        lastPos = transform.position;
+        mainCamera = Camera.main;
+
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
     }
 
-    void Update()
+    private void Start()
     {
-        if (gameManager == null || !gameManager.gameScreen.activeSelf)
+        targetPosition = transform.position;
+        lastPosition = transform.position;
+    }
+
+    private void Update()
+    {
+        if (gameManager == null ||
+            gameManager.gameScreen == null ||
+            !gameManager.gameScreen.activeSelf)
         {
-            if (reelingAudio.isPlaying)
-                reelingAudio.Stop();
+            StopReelingAudio();
             return;
         }
 
-        Vector3 screenPos = Input.mousePosition;
-        screenPos.z = fixedZ;
-        targetPos = Camera.main.ScreenToWorldPoint(screenPos);
-        transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * smoothSpeed);
-
-        float distance = Vector3.Distance(transform.position, lastPos);
-        bool isMoving = distance > 0.01f; 
-
-        if (isMoving)
+        if (mainCamera == null)
         {
-            if (!reelingAudio.isPlaying)
+            StopReelingAudio();
+            return;
+        }
+
+        FollowMouse();
+        HandleReelingAudio();
+    }
+
+    private void FollowMouse()
+    {
+        Vector3 screenPosition = Input.mousePosition;
+        screenPosition.z = fixedZ;
+
+        targetPosition = mainCamera.ScreenToWorldPoint(
+            screenPosition
+        );
+
+        transform.position = Vector3.Lerp(
+            transform.position,
+            targetPosition,
+            Time.deltaTime * smoothSpeed
+        );
+    }
+
+    private void HandleReelingAudio()
+    {
+        float movementDistance = Vector3.Distance(
+            transform.position,
+            lastPosition
+        );
+
+        bool isMoving = movementDistance > 0.01f;
+
+        if (reelingAudio != null)
+        {
+            if (isMoving && !reelingAudio.isPlaying)
             {
                 reelingAudio.loop = true;
                 reelingAudio.Play();
             }
-        }
-        else
-        {
-            if (reelingAudio.isPlaying)
+            else if (!isMoving && reelingAudio.isPlaying)
+            {
                 reelingAudio.Stop();
+            }
         }
 
-        lastPos = transform.position;
+        lastPosition = transform.position;
+    }
+
+    private void StopReelingAudio()
+    {
+        if (reelingAudio != null && reelingAudio.isPlaying)
+        {
+            reelingAudio.Stop();
+        }
+
+        lastPosition = transform.position;
+    }
+
+    private void OnDisable()
+    {
+        StopReelingAudio();
     }
 }

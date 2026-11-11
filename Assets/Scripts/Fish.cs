@@ -2,57 +2,75 @@
 
 public class Fish : MonoBehaviour
 {
-    public float moveSpeed;
-    private float xDestroy = 50.0f;
-    private float zPos = -3.5f;
-    private float xPos;
-    public int pointValue;
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float destroyDistance = 50f;
 
-    private GameManager gameManager;
+    [Header("Spawn Settings")]
+    [SerializeField] private float spawnHeightMin = -2.3f;
+    [SerializeField] private float spawnHeightMax = 5f;
+    [SerializeField] private float spawnDistance = 20f;
+    [SerializeField] private float zPosition = -3.5f;
 
-    void Start()
+    [Header("Fish Properties")]
+    public int pointValue = 10;
+    public bool isDangerous = false;
+
+    private void Start()
     {
-        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
-        transform.position = RandomSpawnPos();
+        SpawnFish();
+    }
 
+    private void Update()
+    {
+        MoveFish();
+        CheckDestroyDistance();
+    }
+
+    private void SpawnFish()
+    {
+        float xPosition = Random.value > 0.5f
+            ? -spawnDistance
+            : spawnDistance;
+
+        float yPosition = Random.Range(
+            spawnHeightMin,
+            spawnHeightMax
+        );
+
+        transform.position = new Vector3(
+            xPosition,
+            yPosition,
+            zPosition
+        );
+
+        transform.rotation = Quaternion.Euler(
+            0f,
+            xPosition > 0f ? 270f : 90f,
+            0f
+        );
+
+        // 40% chance of increased movement speed.
         if (Random.value < 0.4f)
         {
             moveSpeed *= 1.8f;
         }
-
-        if (transform.position.x > 0.0f)
-        {
-            transform.rotation = Quaternion.Euler(0, 270, 0);
-        }
-        else
-        {
-            transform.rotation = Quaternion.Euler(0, 90, 0);
-        }
     }
 
-    void Update()
+    private void MoveFish()
     {
-        transform.Translate(0, 0, moveSpeed * Time.deltaTime, Space.Self);
+        transform.Translate(
+            Vector3.forward * moveSpeed * Time.deltaTime,
+            Space.Self
+        );
+    }
 
-        if (transform.position.x > xDestroy || transform.position.x < -xDestroy)
+    private void CheckDestroyDistance()
+    {
+        if (Mathf.Abs(transform.position.x) > destroyDistance)
         {
             Destroy(gameObject);
         }
     }
 
-    Vector3 RandomSpawnPos()
-    {
-        float yPos = Random.Range(-2.3f, 5.0f);
-
-        if (Random.value > 0.5f)
-        {
-            xPos = -20.0f;
-        }
-        else
-        {
-            xPos = 20.0f;
-        }
-
-        return new Vector3(xPos, yPos, zPos);
-    }
 }

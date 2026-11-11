@@ -1,69 +1,81 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 
 public class FishingRodController : MonoBehaviour
 {
     [Header("Audio Settings")]
-    public AudioSource ouchAudio;
-    public AudioSource catchAudio; 
+    [SerializeField] private AudioSource ouchAudio;
+    [SerializeField] private AudioSource catchAudio;
+
+    [Header("Fishing Settings")]
+    [SerializeField] private float catchRadius = 1f;
+
+    [Header("Game Settings")]
+    public bool canCatch = true;
 
     private GameManager gameManager;
 
-    private float catchRadius = 1.0f;
-    public bool canCatch = true;
-
-    void Start()
+    private void Awake()
     {
-        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+        gameManager = FindFirstObjectByType<GameManager>();
     }
 
-    void Update()
+    private void Update()
     {
+        if (!canCatch || gameManager == null ||
+            !gameManager.isGameActive)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             CatchNearestFish();
-        }      
+        }
     }
 
-    void CatchNearestFish()
+    private void CatchNearestFish()
     {
-        if (!canCatch || catchRadius <= 0f) return;
+        if (catchRadius <= 0f)
+            return;
 
         Fish nearestFish = null;
-        float nearestDistance = Mathf.Infinity;
+        float nearestDistance = catchRadius * catchRadius;
 
-        foreach (Fish fish in FindObjectsByType<Fish>(FindObjectsSortMode.None))
+        Fish[] fishes = FindObjectsByType<Fish>(
+            FindObjectsSortMode.None
+        );
+
+        foreach (Fish fish in fishes)
         {
-            float distance = Vector3.Distance(transform.position, fish.transform.position);
-            if (distance <= catchRadius && distance < nearestDistance)
+            float distance = (
+                fish.transform.position - transform.position
+            ).sqrMagnitude;
+
+            if (distance <= nearestDistance)
             {
                 nearestDistance = distance;
                 nearestFish = fish;
             }
         }
 
-        if (nearestFish == null) return;
+        if (nearestFish == null)
+            return;
 
-        if (nearestFish.gameObject.name.Contains("Shark(Clone)") ||
-            nearestFish.gameObject.name.Contains("Whale(Clone)") ||
-            nearestFish.gameObject.name.Contains("Dolphin(Clone)"))
+        // Award points for the caught fish.
+        gameManager.UpdateScore(nearestFish.pointValue);
+
+        if (nearestFish.isDangerous)
         {
             gameManager.UpdateHearts();
 
             if (ouchAudio != null)
-            {
                 ouchAudio.Play();
-            }
         }
-
         else
         {
             if (catchAudio != null)
-            {
                 catchAudio.Play();
-            }
         }
 
-        gameManager.UpdateScore(nearestFish.pointValue);
         Destroy(nearestFish.gameObject);
     }
 }

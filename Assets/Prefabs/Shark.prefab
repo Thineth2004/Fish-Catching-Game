@@ -118,7 +118,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FishMove
   moveSpeed: 2.6
+  destroyDistance: 50
+  spawnHeightMin: -2.3
+  spawnHeightMax: 5
+  spawnDistance: 20
+  zPosition: -3.5
   pointValue: -10
+  isDangerous: 1
 --- !u!65 &-5594362828858874685
 BoxCollider:
   m_ObjectHideFlags: 0
